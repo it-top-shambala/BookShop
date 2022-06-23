@@ -5,17 +5,18 @@ using namespace std;
 
 class Accountant
 {
-protected:
-	string name;	
-	float expense;
-	float income;
-	int quantity;
 public:
+	double bank;
+	float expense;
+	float income;	
+
 	Accountant() 
 	{
-		//создание объекта Бухгалтер для хранения данных
+		bank = 10000;
+		expense = 0;
+		income = 0;
 	}
-	void setIncome(float cost_price, float sale_price, int quantity)
+	void setIncome()
 	{
 		//определение дохода
 	}
