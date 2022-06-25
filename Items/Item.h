@@ -12,7 +12,6 @@ protected:
 	string _description;   //описание товара
 	short _year;           //год издания/производства
 	int _count_in_stock;   //количество единиц в наличии
-	int _count_sold;       //количество проданных единиц
 	int _defective;        //количество бракованных/испорченных единиц
 	float _price_in;       //закупочная цена
 	float _price_out;      //цена продажи
@@ -23,7 +22,6 @@ protected:
 		_description = description;
 		_year = year;
 		_count_in_stock = count_in_stock;
-		_count_sold = 0;
 		_defective = 0;
 		_price_in = price_in;
 		_markup = markup;
@@ -36,13 +34,17 @@ public:
 	float GetPriceOut() {
 		return _price_out;
 	}
+	int GetCountInStock()
+	{
+		return _count_in_stock;
+	}
 	void CountInStockPlus(int number) {
 		_count_in_stock += number;
 	}
 	void CountInStockMinus(int number) {
 		_count_in_stock -= number;
 	}
-	void CountSoldPlus(int number) {
-		_count_sold += number;
+	string GetDescription() {
+		return _description;
 	}
 };
