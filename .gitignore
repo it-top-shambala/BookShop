@@ -56,5 +56,5 @@ _deps
 
 cmake-build-debug/
 .idea/
-.out/
+out/
 .vs/
