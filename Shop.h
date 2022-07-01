@@ -8,7 +8,11 @@
 #include "Items/Item_Book.h"
 #include "Items/Item_Pen.h"
 #include "Base/Base.h"
+#include "Base/Base_Items.h"
 #include "Base/Base_Sold.h"
+#include "Base/Base_Deals.h"
+#include "Base/Base_Browser.h"
+#include "Retail/Deal.h"
 
 using std::string;
 using std::map;
@@ -20,11 +24,12 @@ using std::endl;
 //класс магазин
 class Shop {
 protected:
-	Base _base;                  //база товаров, структурированная по коду товара
-	Base_Sold _base_sold;        //база проданного товара, структурированная по коду и кол-ву проданных единиц  
-	string _date;                //дата может обновляться, подтягивая системное время (как вариант)
-	float _revenue;              //выручка	
-	float _profit;               //прибыль   
+	Base_Items _base_items;          //база товаров, структурированная по коду товара
+	Base_Sold _base_sold;            //база проданного товара, структурированная по коду и кол-ву проданных единиц  
+	Base_Deals _base_deals;          //база продаж
+	string _date="2022.07.01.16:00"; //дата может обновляться, подтягивая системное время (как вариант) (инициализировал для теста)
+	float _revenue;                  //выручка	
+	float _profit;                   //прибыль   
 public: 
 	Shop() {
 		_revenue = 0;
@@ -38,12 +43,12 @@ public:
 		int count_in_stock;
 		float price_in;
 		float markup;
-		////каким-то образом будут запрашиваться эти данные (сканером штрих-кодов, например), но пока через консоль
+		//каким-то образом будут запрашиваться эти данные (сканером штрих-кодов, например), но пока через консоль
 		cout << "Input code: "; cin >> code;
 		cout << "Input year: "; cin >> year;
 		cout << "Input quantity: "; cin >> count_in_stock;
 		cout << "Input purchase price: "; cin >> price_in;
-        cout << "Input markup: "; cin >> markup;
+		cout << "Input markup: "; cin >> markup;
 		if (description == "book") {
 			item = new Item_Book(code, description, year, count_in_stock, price_in, markup);
 		}
@@ -63,16 +68,13 @@ public:
 		//а иначе, у нас не будет доступа к уникальным полям дочерних классов класса Item
 
 		if (item != nullptr) {
-			_base.Add(pair<int,Item>(code, *item));
-		}	
+			_base_items.Add(_base_items.GetBase(), code, *item);
+		}
 	}
 
-	//метод продажи товара путем поиска его в базе и изменения счетчика наличия - члена класса Item
-	//(скидка (коэффициент) берется из какой-нибудь базы данных бонусных карт покупателей, например)
-	//можно вынести продажу в отдельный класс Deal, сделка бы принимала дату, ФИО продавца, код товара, скидку, печатался бы чек
-	//каждый раз новый объект создавался бы и помещался в базу сделок (но это пока избыточно)
-	void ItemSell(int code, int number, float discount) {
-		Item* item = _base.Find(code);
+	//метод продажи (переработанный)
+	void ItemSell(int code, int number, float discount, string salesman) {
+		Item* item = _base_items.Find(_base_items.GetBase(), code);
 		if (item) {
 			float cash = 0;   //сумма к оплате
 			if (discount > 0) {
@@ -84,8 +86,10 @@ public:
 			_profit += (cash - item->GetPriceIn());
 			item->CountInStockMinus(number);
 			//добавляем код и кол-во проданного товара в базу
-			_base_sold.Add(pair <int, int>(code, number));
-			PrintReceipt(code, number, cash);
+			_base_sold.Add(_base_sold.GetBase(), code, number);
+			Deal deal(salesman, code, number, cash);
+			deal.PrintReceipt(code, number, cash);
+			_base_deals.Add(_base_deals.GetBase(), _date, deal);
 		}
 		else cout << "Item's not found!" << endl;
 	}
@@ -104,37 +108,33 @@ public:
 	void Analytics(int select, int code) {
     //здесь собираются и используются все нужные функции баз и полей класса (лень делать меню) тестовый вывод!
 		switch (select) {
-		case 1: _base.GetBaseSize();
+		case 1: _base_items.GetBaseSize(_base_items.GetBase());
 			break;
-		case 2: _base.GetCount(code);
+		case 2: _base_items.GetCount(_base_items.GetBase(), code);
 			break;
-		case 3: _base.Show();
+		case 3: Base_Browser::Show(_base_items.GetBase());
 			break;
-		case 4: _base.Show(code);
+		case 4: Base_Browser::Show(_base_items.GetBase(), code);
 			break;
-		case 5: _base_sold.GetBaseSize();
+		case 5: _base_sold.GetBaseSize(_base_sold.GetBase());
 			break;
-		case 6: _base_sold.GetCount(code);
+		case 6: _base_sold.GetCount(_base_sold.GetBase(), code);
 			break;
-		case 7: _base_sold.Show();
+		case 7: Base_Browser::Show(_base_sold.GetBase());
 			break;
-		case 8: _base_sold.Show(code);
+		case 8: Base_Browser::Show(_base_sold.GetBase(), code);
 			break;
-		case 9: cout << GetProfit() << endl;
+		case 9: Base_Browser::Show(_base_deals.GetBase());
 			break;
-		case 10: cout << GetRevenue() << endl;
+		case 10: Base_Browser::Show(_base_deals.GetBase(),_date);
+			break;
+		case 11: cout << GetProfit() << endl;
+			break;
+		case 12: cout << GetRevenue() << endl;
 			break;
 		default:
 			break;
 		}
-	}
-
-	void PrintReceipt(int code, int number, float price) {
-		//печать чека:
-		//_date (дата продажи)
-		//code (вывод данных о книге по коду (нужны геттеры)
-		//number (кол-во)
-		//price (цена) и тд
 	}
 };
 

@@ -14,9 +14,9 @@ protected:
 	int _count_in_stock;   //количество единиц в наличии
 	int _defective;        //количество бракованных/испорченных единиц
 	float _price_in;       //закупочная цена
-	float _price_out;      //цена продажи
 	float _markup;         //процент наценки (цена продажи будет вычисляться путем умножения на заложенный коэффициент)
 
+	//по поводу много полей, ну я так вижу))) все они относятся к обобщенному товару в моем понимании
 	Item(int code, string description, short year, int count_in_stock, float price_in, float markup) {
 		_code = code;
 		_description = description;
@@ -25,17 +25,21 @@ protected:
 		_defective = 0;
 		_price_in = price_in;
 		_markup = markup;
-		_price_out = _price_in * _markup;
 	}
 public:
+	void SetPriceIn(float new_price) {
+		_price_in = new_price;
+	}
+	void SetMarkUp(float new_markup) {
+		_markup = new_markup;
+	}
 	float GetPriceIn() {
 		return _price_in;
 	}
 	float GetPriceOut() {
-		return _price_out;
+		return  _price_in * _markup;
 	}
-	int GetCountInStock()
-	{
+	int GetCountInStock() {
 		return _count_in_stock;
 	}
 	void CountInStockPlus(int number) {
@@ -46,5 +50,9 @@ public:
 	}
 	string GetDescription() {
 		return _description;
+	}
+	void SetDefective(int number) {
+		_defective += number;
+		_count_in_stock -= number;
 	}
 };
